@@ -47,6 +47,10 @@ const regexEmail = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/;
 const regexNumber = /^([9876]{1})(\d{1})(\d{8})$/;
 const regexPinCode = /^[1-9][0-9]{5}$}*$/;
 
+const isValidObjectId = function (objectId) {
+    return mongoose.Types.ObjectId.isValid(objectId); // returns a boolean
+  };
+
 exports.register = async function (req, res) {
   const { fname, lname, password, email, phone, profileImage, address } =
     req.body;
@@ -172,3 +176,41 @@ exports.register = async function (req, res) {
     data: userCreated,
   });
 };
+
+
+
+exports.getProfile = async function (req, res) {
+    try {
+      let userId = req.params.userId;
+  
+      // if userId is not a valid ObjectId
+      if (!isValidObjectId(userId)) {
+        return res.status(400).send({
+          status: false,
+          message: "userId is invalid",
+        });
+      }
+  
+      // if user does not exist
+      let userDoc = await userModel.findById(userId);
+      if (!userDoc) {
+        return res.status(400).send({
+          status: false,
+          message: "user does not exist",
+        });
+      }
+  
+    
+      res.status(200).send({
+        status: true,
+        message: "Sucess",
+        data: userDoc,
+      });
+    } catch (err) {
+      res.status(500).send({
+        status: false,
+        message: " Server Error",
+        error: err.message,
+      });
+    }
+  };
