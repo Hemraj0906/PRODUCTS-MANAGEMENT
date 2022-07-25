@@ -413,7 +413,7 @@ exports.updatedUser = async function (req, res) {
     if(phone)savedObj.phone=phone
     if(address)savedObj.address=address
     const updatedData = await userModel.findOneAndUpdate(
-      { userId },
+      { _id:userId },
       {
         $set: savedObj,
       },
