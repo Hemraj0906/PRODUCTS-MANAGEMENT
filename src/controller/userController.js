@@ -428,3 +428,5 @@ exports.updatedUser = async function (req, res) {
     res.status(500).send({ err: err.message });
   }
 };
+
+// module.exports={uploadFile}
