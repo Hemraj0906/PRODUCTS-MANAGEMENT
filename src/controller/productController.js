@@ -1,5 +1,6 @@
 const productModel = require("../model/productModel");
 const aws = require("aws-sdk");
+const mongoose = require("mongoose");
 
 aws.config.update({
   accessKeyId: "AKIAY3L35MCRVFM24Q7U",
@@ -38,7 +39,7 @@ const isValid = (value) => {
   return true;
 };
 const titleRegex = /^\w+$/;
-const priceRegex = /^\d*$/;
+const priceRegex = /[0-9]/;
 // const regexSize = /(?i)\d+(?:\.5)?x-(?:S|XS|M|X|L|XXL|XL)/;
 exports.createProduct = async function (req, res) {
   try {
@@ -56,19 +57,8 @@ exports.createProduct = async function (req, res) {
     } = req.body;
     // installments = installments - 0;
     price = price * 1;
-    console.log(typeof price,"price");
-    // {
-    //     "title": 'Nit Grit',
-    //     "description": 'Dummy description',
-    //     "price": 23.0,
-    //     "currencyId": 'INR',
-    //     "currencyFormat": '₹',
-    //     "isFreeShipping": false,
-    //     "style": 'Colloar',
-    //     "availableSizes": ["S", "XS","M","X", "L","XXL", "XL"],
-    //     "installments": 5,
-
-    //   }
+    console.log(price, "price");
+    console.log(typeof price, "price");
     console.log(
       title,
       description,
@@ -81,7 +71,6 @@ exports.createProduct = async function (req, res) {
       availableSizes,
       installments
     );
-    console.log(typeof availableSizes);
     if (!Object.keys(req.body).length)
       return res
         .status(400)
@@ -94,6 +83,11 @@ exports.createProduct = async function (req, res) {
       return res
         .status(400)
         .send({ status: false, msg: "title must be valid character" });
+    const alreadytitle = await productModel.findOne({ title });
+    if (alreadytitle)
+      return res
+        .status(400)
+        .send({ status: false, msg: "Thhiss title is already being used" });
     if (!isValid(description))
       return res
         .status(400)
@@ -102,12 +96,12 @@ exports.createProduct = async function (req, res) {
       return res
         .status(400)
         .send({ status: false, msg: "price cannot be empty" });
-    console.log(price,"price 2");
-    console.log(!priceRegex.test(price),"rex price");
-    if (!priceRegex.test(price))
+    console.log(price, "price 2");
+    if (!!isNaN(Number(price)))
       return res
         .status(400)
         .send({ status: false, msg: "price must be a number" });
+    console.log(price.toFixed(2), "float");
     if (!isValid(currencyId))
       return res
         .status(400)
@@ -166,25 +160,38 @@ exports.createProduct = async function (req, res) {
           .send({ status: false, msg: "style must be a valid character" });
     }
     if (availableSizes) {
+      const allowedSize = ["S", "XS", "M", "X", "L", "XXL", "XL"];
+      const allSize = { S: 1, XS: 1, M: 1, X: 1, L: 2, XXL: 1, XL: 1 };
+
+      availableSizes = availableSizes.split(",");
       if (!isValid(availableSizes))
         return res
           .status(400)
           .send({ status: false, msg: "availableSizes cannot be empty" });
-      //   if (regexSize.test(availableSizes))
-      //     return res.status(400).send({
-      //       status: false,
-      //       msg: 'availableSizes must be "S", "XS","M","X", "L","XXL", "XL"',
-      //     });
+
+      let sizes = ["S", "XS", "M", "X", "L", "XXL", "XL"];
+      let newArr = [];
+      for (let j = 0; j < availableSizes.length; j++) {
+        newArr.push(availableSizes[j].trim());
+      }
+      for (let i = 0; i < newArr.length; i++) {
+        if (sizes.includes(newArr[i]) == false) {
+          return res
+            .status(400)
+            .send({ status: false, message: "Please put valid size" });
+        }
+      }
+      availableSizes = newArr;
     }
     if (installments) {
       if (!isValid(installments))
         return res
           .status(400)
           .send({ status: false, msg: "installments cannot be empty" });
-    //   if (priceRegex.test(installments))
-    //     return res
-    //       .status(400)
-    //       .send({ status: false, msg: "installments must be number" });
+        if (!priceRegex.test(installments))
+          return res
+            .status(400)
+            .send({ status: false, msg: "installments must be number" });
     }
     const productCreated = await productModel.create({
       title,
@@ -351,13 +358,11 @@ const updateDetails = async function (req, res) {
     );
     if (!updateProduct) {
     }
-    return res
-      .status(200)
-      .send({
-        status: true,
-        msg: "product profile details updated succesfullly",
-        data: updateproduct,
-      });
+    return res.status(200).send({
+      status: true,
+      msg: "product profile details updated succesfullly",
+      data: updateproduct,
+    });
   } catch (err) {
     return res.status(500).send({ status: false, msg: err.message });
   }
