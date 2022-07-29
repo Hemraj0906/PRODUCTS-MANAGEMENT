@@ -230,13 +230,9 @@ exports.createProduct = async function (req, res) {
 
 exports.getProduct = async (req, res) => {
   try {
-    let filterQuery = req.query;
-    let { size, name, priceGreaterThan, priceLessThan, priceSort } =
-      filterQuery;
+    let { size, name, priceGreaterThan, priceLessThan, priceSort } = req.query;
 
-    console.log(req.query);
-
-    if (size || name || priceGreaterThan || priceLessThan || priceSort) {
+    
       let query = { isDeleted: false };
 
       if (size) {
@@ -295,11 +291,7 @@ exports.getProduct = async (req, res) => {
         message: "Success",
         data: getAllProduct,
       });
-    } else {
-      return res
-        .status(400)
-        .send({ status: false, message: "Invalid Request Query Params" });
-    }
+    
   } catch (error) {
     return res.status(500).send({ status: false, error: error.message });
   }
