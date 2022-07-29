@@ -18,7 +18,7 @@ router.put('/products/:productId', newUpdate);
 
 
 router.get('/products', getProduct);
-getProduct
+
 
 
 module.exports = router

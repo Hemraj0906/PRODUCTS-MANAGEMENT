@@ -287,11 +287,9 @@ exports.updatedUser = async function (req, res) {
         .status(400)
         .send({ status: false, message: "Body cannot be empty" });
     let { files } = req;
-    if (!files?.length) {
-      return res
-        .status(400)
-        .send({ status: false, msg: "profileimage  is missing" });
-    }
+    let uploadedFileURL
+    console.log(files)
+    if(files.length){
     if (files[0].fieldname != "profileImage")
       // upload only png and jpg format
       return res
@@ -305,7 +303,7 @@ exports.updatedUser = async function (req, res) {
 
     //upload to s3 and get the uploaded link
     // res.send the link back to frontend/postman
-    const uploadedFileURL = await uploadFile(files[0]);
+    uploadedFileURL = await uploadFile(files[0]);}
     //   console.log(uploadedFileURL)
     if(fname){
     if (!isValid(fname))
