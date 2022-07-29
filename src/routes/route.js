@@ -1,7 +1,7 @@
 const express = require('express');
 const {updatedUser, userLogin,getProfile, register } = require('../controller/userController');
 const {authentication,authorization}= require('../middleware/auth')
-const {createProduct,updateDetails,newUpdate,getProduct}=require('../controller/productController')
+const {createProduct,updateDetails,newUpdate,getProduct,getProductNew}=require('../controller/productController')
 const router = express.Router();
 
 router.post('/register', register);

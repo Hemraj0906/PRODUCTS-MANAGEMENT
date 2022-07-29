@@ -225,33 +225,49 @@ exports.createProduct = async function (req, res) {
 };
 
 //get product
+
+
+
 exports.getProduct = async (req, res) => {
   try {
     let filterQuery = req.query;
-    let { size, name, priceGreaterThen, priceLessThen, priceSort } =
+    let { size, name, priceGreaterThan, priceLessThan, priceSort } =
       filterQuery;
 
-    if (size || name || priceGreaterThen || priceLessThen || priceSort) {
+    console.log(req.query);
+
+    if (size || name || priceGreaterThan || priceLessThan || priceSort) {
       let query = { isDeleted: false };
 
       if (size) {
-        query["availableSizes"] = size;
+        let size1 = size.split(",").map((x) => x.trim().toUpperCase());
+        if (
+          size1.map((x) => (x)).filter((x) => x === false).length !==
+          0
+        )
+          return res
+            .status(400)
+            .send({
+              status: false,
+              message: "Size Should be among  S,XS,M,X,L,XXL,XL",
+            });
+        query.availableSizes = { $all : size1 };
       }
 
       if (name) {
         query["title"] = { $regex: name };
       }
 
-      if (priceGreaterThen) {
-        query["price"] = { $gt: priceGreaterThen };
+      if (priceGreaterThan) {
+        query["price"] = { $gt: priceGreaterThan };
       }
 
-      if (priceLessThen) {
-        query["price"] = { $lt: priceLessThen };
+      if (priceLessThan) {
+        query["price"] = { $lt: priceLessThan };
       }
 
-      if (priceGreaterThen && priceLessThen) {
-        query["price"] = { $gt: priceGreaterThen, $lt: priceLessThen };
+      if (priceGreaterThan && priceLessThan) {
+        query["price"] = { $gt: priceGreaterThan, $lt: priceLessThan };
       }
 
       if (priceSort) {
@@ -263,7 +279,7 @@ exports.getProduct = async (req, res) => {
           });
         }
       }
-
+      console.log(query);
       let getAllProduct = await productModel
         .find(query)
         .sort({ price: priceSort });
@@ -319,7 +335,7 @@ const getProductById = async function (req, res) {
 };
 //newUpdate
 exports.newUpdate = async function (req, res) {
-  let {productId} = req.params;
+  let { productId } = req.params;
   let {
     title,
     description,
@@ -332,86 +348,147 @@ exports.newUpdate = async function (req, res) {
     availableSizes,
     installments,
   } = req.body;
-  if(title||title.length==0){
-    if(!isValid(title)) return res.status(400).send({status:false,message:"titlle cannot be empty"})
-    if(!titleRegex.test(title))return res.status(400).send({status:false,message:"titlle contains invalid chaarc"})
-    const alreadytitle = await productModel.findOne({ title })
-    if(alreadytitle) return res.status(400).send({status:false,message:"This tile is already being used"})
+  if (title || title.length == 0) {
+    if (!isValid(title))
+      return res
+        .status(400)
+        .send({ status: false, message: "titlle cannot be empty" });
+    if (!titleRegex.test(title))
+      return res
+        .status(400)
+        .send({ status: false, message: "titlle contains invalid chaarc" });
+    const alreadytitle = await productModel.findOne({ title });
+    if (alreadytitle)
+      return res
+        .status(400)
+        .send({ status: false, message: "This tile is already being used" });
   }
-  if(description ||description.length==0){
-    if(!isValid(description)) return res.status(400).send({status:false,message:"description cannot be empty"})
+  if (description || description.length == 0) {
+    if (!isValid(description))
+      return res
+        .status(400)
+        .send({ status: false, message: "description cannot be empty" });
   }
-  if(price ||price.length==0){
-    if(!isValid(price)) return res.status(400).send({status:false,message:"price cannot be empty"})
-    if(!priceRegex.test(price)) return res.status(400).send({status:false,message:"price must be a number"})
+  if (price || price.length == 0) {
+    if (!isValid(price))
+      return res
+        .status(400)
+        .send({ status: false, message: "price cannot be empty" });
+    if (!priceRegex.test(price))
+      return res
+        .status(400)
+        .send({ status: false, message: "price must be a number" });
   }
-  if(currencyId ||currencyId.length==0){
-    if(!isValid(currencyId))return res.status(400).send({status:false,message:"currencyId cannot be empty"})
-    if(currencyId !="INR")return res.status(400).send({status:false,message:"currencyId must be INR"})
+  if (currencyId || currencyId.length == 0) {
+    if (!isValid(currencyId))
+      return res
+        .status(400)
+        .send({ status: false, message: "currencyId cannot be empty" });
+    if (currencyId != "INR")
+      return res
+        .status(400)
+        .send({ status: false, message: "currencyId must be INR" });
   }
-  if(currencyFormat ||currencyFormat.length==0){
-    if(!isValid(currencyFormat))return res.status(400).send({status:false,message:"currencyFormat cannot be empty"})
-    if(currencyFormat !="₹")return res.status(400).send({status:false,message:"currencyFormat must be ₹"})
+  if (currencyFormat || currencyFormat.length == 0) {
+    if (!isValid(currencyFormat))
+      return res
+        .status(400)
+        .send({ status: false, message: "currencyFormat cannot be empty" });
+    if (currencyFormat != "₹")
+      return res
+        .status(400)
+        .send({ status: false, message: "currencyFormat must be ₹" });
   }
-  console.log(isFreeShipping)
-  if(isFreeShipping ||isFreeShipping.length==0){
-    if(!isValid(isFreeShipping)) return res.status(400).send({status:false,message:"isFreeShipping cannot be empty"})
-    if(isFreeShipping !=="true" || isFreeShipping !=="false" || isFreeShipping !==true || isFreeShipping !==false) return res.status(400).send({status:false,message:"isFreeShipping must be boolean"})
+  console.log(isFreeShipping);
+  if (isFreeShipping || isFreeShipping.length == 0) {
+    if (!isValid(isFreeShipping))
+      return res
+        .status(400)
+        .send({ status: false, message: "isFreeShipping cannot be empty" });
+    if (
+      isFreeShipping !== "true" ||
+      isFreeShipping !== "false" ||
+      isFreeShipping !== true ||
+      isFreeShipping !== false
+    )
+      return res
+        .status(400)
+        .send({ status: false, message: "isFreeShipping must be boolean" });
   }
-  if(style ||style.length==0 ){
-    if(!isValid(style))return res.status(400).send({status:false,message:"style cannot be empty"})
+  if (style || style.length == 0) {
+    if (!isValid(style))
+      return res
+        .status(400)
+        .send({ status: false, message: "style cannot be empty" });
   }
-  if(availableSizes ||availableSizes.length==0 ){
-    if(!isValid(availableSizes))return res.status(400).send({status:false,message:"availableSizes cannot be empty"})
+  if (availableSizes || availableSizes.length == 0) {
+    if (!isValid(availableSizes))
+      return res
+        .status(400)
+        .send({ status: false, message: "availableSizes cannot be empty" });
     let sizes = ["S", "XS", "M", "X", "L", "XXL", "XL"];
-      let newArr = [];
-      for (let j = 0; j < availableSizes.length; j++) {
-        newArr.push(availableSizes[j].trim());
+    let newArr = [];
+    for (let j = 0; j < availableSizes.length; j++) {
+      newArr.push(availableSizes[j].trim());
+    }
+    for (let i = 0; i < newArr.length; i++) {
+      if (sizes.includes(newArr[i]) == false) {
+        return res
+          .status(400)
+          .send({ status: false, message: "Please put valid size" });
       }
-      for (let i = 0; i < newArr.length; i++) {
-        if (sizes.includes(newArr[i]) == false) {
-          return res
-            .status(400)
-            .send({ status: false, message: "Please put valid size" });
-        }
-      }
-      availableSizes = newArr;
+    }
+    availableSizes = newArr;
   }
-  if(installments ||installments.length==0 ){
-    if(!isValid(installments)) return res.status(400).send({status:false,message:"installments cannot be empty"})
+  if (installments || installments.length == 0) {
+    if (!isValid(installments))
+      return res
+        .status(400)
+        .send({ status: false, message: "installments cannot be empty" });
   }
 
   let { files } = req;
-  let uploadedFileURL
-    if (files?.length) {
-      if (files[0].fieldname != "productImage")
+  let uploadedFileURL;
+  if (files?.length) {
+    if (files[0].fieldname != "productImage")
       // upload only png and jpg format
       return res
         .status(400)
         .send({ status: false, msg: "Only images allowed as profileImage" });
-      if (!files[0].originalname.match(/\.(png|jpg)$/))
+    if (!files[0].originalname.match(/\.(png|jpg)$/))
       // upload only png and jpg format
       return res
         .status(400)
         .send({ status: false, msg: "Only images allowed" });
-        uploadedFileURL = await uploadFile(files[0]);
-    }
-    //upload to s3 and get the uploaded link
-    // res.send the link back to frontend/postman
-    const savedObj = {};
-    if (title) savedObj.title = title;
-    if (description) savedObj.description = description;
-    if (price) savedObj.price = price;
-    if (uploadedFileURL) savedObj.productImage = uploadedFileURL;
-    if (isFreeShipping) savedObj.isFreeShipping = isFreeShipping;
-    if (currencyId) savedObj.currencyId = currencyId;
-    if (currencyFormat) savedObj.currencyFormat = currencyFormat;
-    if (style) savedObj.style = style;
-    if (availableSizes) savedObj.availableSizes = availableSizes;
-    if (installments) savedObj.installments = installments;
-    const updateProduct= await productModel.findOneAndUpdate({_id:productId,isDeleted:false},savedObj,{new:true})
-    if(updateProduct==null) return res.status(404).send({status:false,message:"Not found"})
-    res.status(200).send({status:true,message:"product is successfully updated",data:updateProduct})
+    uploadedFileURL = await uploadFile(files[0]);
+  }
+  //upload to s3 and get the uploaded link
+  // res.send the link back to frontend/postman
+  const savedObj = {};
+  if (title) savedObj.title = title;
+  if (description) savedObj.description = description;
+  if (price) savedObj.price = price;
+  if (uploadedFileURL) savedObj.productImage = uploadedFileURL;
+  if (isFreeShipping) savedObj.isFreeShipping = isFreeShipping;
+  if (currencyId) savedObj.currencyId = currencyId;
+  if (currencyFormat) savedObj.currencyFormat = currencyFormat;
+  if (style) savedObj.style = style;
+  if (availableSizes) savedObj.availableSizes = availableSizes;
+  if (installments) savedObj.installments = installments;
+  const updateProduct = await productModel.findOneAndUpdate(
+    { _id: productId, isDeleted: false },
+    savedObj,
+    { new: true }
+  );
+  if (updateProduct == null)
+    return res.status(404).send({ status: false, message: "Not found" });
+  res
+    .status(200)
+    .send({
+      status: true,
+      message: "product is successfully updated",
+      data: updateProduct,
+    });
 };
 
 exports.updateDetails = async function (req, res) {
