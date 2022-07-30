@@ -147,7 +147,7 @@ exports.createProduct = async function (req, res) {
       return res
         .status(400)
         .send({ status: false, msg: "Only images allowed as profileImage" });
-    if (!files[0].originalname.match(/\.(png|jpg)$/))
+    if (!files[0].originalname.match(/\.(png|jpg|jfif)$/))
       // upload only png and jpg format
       return res
         .status(400)

@@ -4,13 +4,22 @@ const userModel=require('../model/userModel')
 const mongoose=require('mongoose')
 exports.authentication = async function (req, res, next) {
   try {
-    const token = req.headers["x-api-key"];
+    let userId = req.params.userId;
+     // if userId is not a valid ObjectId
+    if (!mongoose.isValidObjectId(userId)) {
+      return res.status(400).send({
+        status: false,
+        message: "userId is invalid",
+      });
+    }
+    let token = req.headers.authorization;
     if (!token) {
       return res
-        .status(400)
-        .send({ status: false, message: "Token must be present" });
+      .status(400)
+      .send({ status: false, message: "Token must be present" });
     }
-    console.log("11");
+    token = token.split(" ")[1]
+
     const decodedToken = jwt.verify(
       token,
       "functionup-radon",
@@ -23,6 +32,7 @@ exports.authentication = async function (req, res, next) {
       return res
         .status(400)
         .send({ status: false, message: "Token is invalid" });
+        req.key= token
     next();
   } catch (err) {
     res.status(500).send({ status: false, message: err.message });
@@ -30,8 +40,8 @@ exports.authentication = async function (req, res, next) {
 };
 
 exports.authorization =async function (req, res, next) {
-  let token = req.headers["X-Api-key"];
-  if (!token) token = req.headers["x-api-key"];
+  let token = req.key
+
   //If no token is present in the request header return error
   if (!token)
     return res
