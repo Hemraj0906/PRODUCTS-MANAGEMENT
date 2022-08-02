@@ -106,7 +106,7 @@ exports.register = async function (req, res) {
       return res.status(400).send({
         status: false,
         message:
-          "password must be between 8 to 15 digits one numbbe and one alphabet",
+          "password must be between 8 to 15 digits one number and one alphabet",
       });
     //hashing password
     const maskedPassword = await bcrypt.hash(password, 12);
@@ -307,7 +307,7 @@ exports.updatedUser = async function (req, res) {
       return res
         .status(400)
         .send({ status: false, msg: "Only images allowed as profileImage" });
-    if (!files[0].originalname.match(/\.(png|jpg)$/))
+    if (!files[0].originalname.match(/\.(png|jpg|gif|webp|jpeg)$/))
       // upload only png and jpg format
       return res
         .status(400)

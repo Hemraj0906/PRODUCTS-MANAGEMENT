@@ -340,6 +340,7 @@ exports.newUpdate = async function (req, res) {
     availableSizes,
     installments,
   } = req.body;
+  console.log(typeof isFreeShipping);
   if (title) {
     if (!isValid(title))
       return res
@@ -355,7 +356,7 @@ exports.newUpdate = async function (req, res) {
         .status(400)
         .send({ status: false, message: "This tile is already being used" });
   }
-  if (description ) {
+  if (description) {
     if (!isValid(description))
       return res
         .status(400)
@@ -371,7 +372,7 @@ exports.newUpdate = async function (req, res) {
         .status(400)
         .send({ status: false, message: "price must be a number" });
   }
-  if (currencyId ) {
+  if (currencyId) {
     if (!isValid(currencyId))
       return res
         .status(400)
@@ -397,15 +398,11 @@ exports.newUpdate = async function (req, res) {
       return res
         .status(400)
         .send({ status: false, message: "isFreeShipping cannot be empty" });
-    if (
-      isFreeShipping !== "true" ||
-      isFreeShipping !== "false" ||
-      isFreeShipping !== true ||
-      isFreeShipping !== false
-    )
+    if (!(isFreeShipping == "true" || isFreeShipping == "false"))
       return res
         .status(400)
         .send({ status: false, message: "isFreeShipping must be boolean" });
+
   }
   if (style) {
     if (!isValid(style))
@@ -447,7 +444,7 @@ exports.newUpdate = async function (req, res) {
       return res
         .status(400)
         .send({ status: false, msg: "Only images allowed as profileImage" });
-    if (!files[0].originalname.match(/\.(png|jpg)$/))
+    if (!files[0].originalname.match(/\.(png|jpg|gif|webp|jpeg)$/))
       // upload only png and jpg format
       return res
         .status(400)
@@ -456,7 +453,6 @@ exports.newUpdate = async function (req, res) {
   }
   //upload to s3 and get the uploaded link
   // res.send the link back to frontend/postman
-  console.log(title);
   const savedObj = {};
   if (title) savedObj.title = title;
   if (description) savedObj.description = description;
@@ -481,7 +477,6 @@ exports.newUpdate = async function (req, res) {
     data: updateProduct,
   });
 };
-
 
 //delete
 exports.deleteProduct = async function (req, res) {
