@@ -10,6 +10,7 @@ const isValid = (value) => {
   if (typeof value === "string" && value.trim().length === 0) return false;
   return true;
 };
+
 const titleRegex = /^\w+$/;
 const priceRegex = /^\d*[0-9](|.\d*[0-9]|,\d*[0-9])?$/;
 
