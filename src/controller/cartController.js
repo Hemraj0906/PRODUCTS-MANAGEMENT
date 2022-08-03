@@ -152,6 +152,14 @@ exports.updateCart = async (req, res) => {
         .status(404)
         .send({ status: false, msg: "Product Id does not exist" });
     }
+    // const Cart = isPresentCartId.items;
+    // let isit = cart.map((x) => x.productId.toString());
+    // if(!isit.includes(productId))return res
+    // .status(400)
+    // .send({
+    //   status: false,
+    //   msg: "no product"
+    // })
 
     if (!mongoose.isValidObjectId(cartId)) {
       return res.status(400).send({ status: false, msg: "Cart Id is invalid" });
@@ -215,7 +223,7 @@ exports.updateCart = async (req, res) => {
               msg: "Remove product Successfully",
               data: productRemove,
             })
-            .select({ __v: 0 });
+            
         }
 
         if (removeProduct == 1) {
@@ -236,7 +244,7 @@ exports.updateCart = async (req, res) => {
                 msg: "Remove product and price update successfully",
                 data: priceUpdate,
               })
-              .select({ __v: 0 });
+              
           }
           cart[i].quantity = cart[i].quantity - 1;
           const cartUpdated = await cartModel.findByIdAndUpdate(

@@ -23,9 +23,9 @@ router.put('/products/:productId', newUpdate);
 
 router.delete('/products/:productId',deleteProduct);
 
-router.post('/users/:userId',createCart);
+router.post('/users/:userId',authentication,authorization,createCart);
 
-router.put('/users/:userId',authentication,authorization,updateCart);
+router.put('/users/:userId',updateCart);
 
 router.get('/users/:userId',getCart);
 
