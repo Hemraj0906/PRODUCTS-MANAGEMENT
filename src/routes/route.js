@@ -31,6 +31,10 @@ router.get('/users/:userId',getCart);
 
 router.delete('/users/:userId',deleteCart);
 
+router.post('/users/:userId',createOrder);
+
+router.put('/users/:userId',updateOrder);
+
 
 
 
