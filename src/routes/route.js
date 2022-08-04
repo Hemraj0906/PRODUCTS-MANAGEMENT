@@ -7,11 +7,11 @@ const router = express.Router();
 
 router.post('/register', register);
 
-router.get('/user/:userId/profile',authentication,authorization, getProfile);
+router.get('/user/:userId/profile', getProfile);
 
 router.post('/login', userLogin);
 
-router.put('/user/:userId/profile',authentication,authorization, updatedUser);
+router.put('/user/:userId/profile', updatedUser);
 
 router.post('/products', createProduct);
 
@@ -23,13 +23,13 @@ router.put('/products/:productId', newUpdate);
 
 router.delete('/products/:productId',deleteProduct);
 
-router.post('/users/:userId',authentication,authorization,createCart);
+router.post('/users/:userId/cart',createCart);
 
-router.put('/users/:userId',updateCart);
+router.put('/users/:userId/cart',updateCart);
 
-router.get('/users/:userId',getCart);
+router.get('/users/:userId/cart',getCart);
 
-router.delete('/users/:userId',deleteCart);
+router.delete('/users/:userId/cart',deleteCart);
 
 router.post('/users/:userId',createOrder);
 

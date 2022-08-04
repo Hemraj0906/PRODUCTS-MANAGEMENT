@@ -2,7 +2,7 @@ const userModel = require("../model/userModel");
 const aws = require("aws-sdk");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
-const validation = require("../validations/validations")
+const validation = require("../validations/validations");
 
 const mongoose = require("mongoose");
 const isValid = (value) => {
@@ -56,6 +56,7 @@ const isValidObjectId = function (objectId) {
 exports.register = async function (req, res) {
   try {
     let { fname, lname, password, email, phone, address } = req.body;
+    console.log(address);
     if (!Object.keys(req.body).length)
       return res
         .status(400)
@@ -139,7 +140,7 @@ exports.register = async function (req, res) {
       return res
         .status(400)
         .send({ status: false, message: "This phone is already being used" });
-        // address=JSON.parse(address)
+    // address=JSON.parse(address)
     if (!isValid(address.shipping.street))
       return res
         .status(400)
@@ -149,13 +150,15 @@ exports.register = async function (req, res) {
         .status(400)
         .send({ status: false, message: "city of shipping cannot be empty" });
     if (!isValid(address.shipping.pincode))
-      return res
-        .status(400)
-        .send({ status: false, message: "pincode of shipping  cannot be empty" });
+      return res.status(400).send({
+        status: false,
+        message: "pincode of shipping  cannot be empty",
+      });
     if (!regexPinCode.test(address.shipping.pincode))
-      return res
-        .status(400)
-        .send({ status: false, message: "please use valid pincode of shipping" });
+      return res.status(400).send({
+        status: false,
+        message: "please use valid pincode of shipping",
+      });
     if (!isValid(address.billing.street))
       return res
         .status(400)
@@ -169,9 +172,10 @@ exports.register = async function (req, res) {
         .status(400)
         .send({ status: false, message: "pincode of billing cannot be empty" });
     if (!regexPinCode.test(address.billing.pincode))
-      return res
-        .status(400)
-        .send({ status: false, message: "please use valid pincode of billing" });
+      return res.status(400).send({
+        status: false,
+        message: "please use valid pincode of billing",
+      });
     const userCreated = await userModel.create({
       fname,
       lname,
@@ -250,20 +254,18 @@ exports.userLogin = async function (req, res) {
         .send({ status: false, msg: "Password must be present" });
     }
     if (!regexEmail.test(email))
-    return res.status(400).send({
-      status: false,
-      message: "please enter valid email",
-    });
-    console.log(password,email)
+      return res.status(400).send({
+        status: false,
+        message: "please enter valid email",
+      });
+    console.log(password, email);
     let UsersData = await userModel.findOne({
       email,
     });
     // UsersData = UsersData.toObject();
     console.log(UsersData);
-    if(!UsersData)
-    return res
-    .status(404)
-    .send({status:false, msg:"User Not found"})
+    if (!UsersData)
+      return res.status(404).send({ status: false, msg: "User Not found" });
     const unmasked = await bcrypt.compare(password, UsersData.password);
     // console.log(UsersData);
     if (!UsersData || !unmasked) {
@@ -274,7 +276,7 @@ exports.userLogin = async function (req, res) {
     const token = jwt.sign(
       {
         userId: UsersData._id.toString(),
-        expiresIn:'24h'
+        expiresIn: "24h",
       },
       "functionup-radon"
     );
@@ -292,138 +294,167 @@ exports.userLogin = async function (req, res) {
 
 exports.updatedUser = async function (req, res) {
   try {
-    let {userId} = req.params;
+    let { userId } = req.params;
     const { fname, lname, password, email, phone, address } = req.body;
     if (!Object.keys(req.body).length)
       return res
         .status(400)
         .send({ status: false, message: "Body cannot be empty" });
+    let newAddres = address;
     let { files } = req;
-    let uploadedFileURL
-    console.log(files)
-    if(files.length){
-    if (files[0].fieldname != "profileImage")
-      // upload only png and jpg format
-      return res
-        .status(400)
-        .send({ status: false, msg: "Only images allowed as profileImage" });
-    if (!files[0].originalname.match(/\.(png|jpg|gif|webp|jpeg)$/))
-      // upload only png and jpg format
-      return res
-        .status(400)
-        .send({ status: false, msg: "Only images allowed" });
+    let uploadedFileURL;
+    if (files.length) {
+      if (files[0].fieldname != "profileImage")
+        // upload only png and jpg format
+        return res
+          .status(400)
+          .send({ status: false, msg: "Only images allowed as profileImage" });
+      if (!files[0].originalname.match(/\.(png|jpg|gif|webp|jpeg)$/))
+        // upload only png and jpg format
+        return res
+          .status(400)
+          .send({ status: false, msg: "Only images allowed" });
 
-    //upload to s3 and get the uploaded link
-    // res.send the link back to frontend/postman
-    uploadedFileURL = await uploadFile(files[0]);}
+      //upload to s3 and get the uploaded link
+      // res.send the link back to frontend/postman
+      uploadedFileURL = await uploadFile(files[0]);
+    }
     //   console.log(uploadedFileURL)
-    if(fname){
-    if (!isValid(fname))
-      return res
-        .status(400)
-        .send({ status: false, message: "fname cannot be empty" });
-    if (!regexName.test(fname))
-      return res
-        .status(400)
-        .send({ status: false, message: "please enter valid characters" })}
-    if(lname){
-    if (!isValid(lname))
-      return res
-        .status(400)
-        .send({ status: false, message: "lname cannot be empty" });
-    if (!regexName.test(lname))
-      return res.status(400).send({
-        status: false,
-        message: "please enter valid lname characters",
-      })}
-      let maskedPassword
-    if(password){
-    if (!isValid(password))
-      return res
-        .status(400)
-        .send({ status: false, message: "password cannot be empty" });
-    if (!regexPassword.test(password))
-      return res.status(400).send({
-        status: false,
-        message:
-          "password must be between 8 to 15 digits one numbbe and one alphabet",
-      });
-    //hashing password
-    maskedPassword = await bcrypt.hash(password, 12);
-    console.log(maskedPassword);}
-    if(email){
-    if (!isValid(email))
-      return res
-        .status(400)
-        .send({ status: false, message: "email cannot be empty" });
-    if (!regexEmail.test(email))
-      return res.status(400).send({
-        status: false,
-        message: "please enter valid email characters",
-      });
-    const foundEmail = await userModel.findOne({ email });
-    if (foundEmail)
-      return res
-        .status(400)
-        .send({ status: false, message: "This email is already being used" });}
-    if(phone){
-    if (!isValid(phone))
-      return res
-        .status(400)
-        .send({ status: false, message: "phone cannot be empty" });
-    if (!regexNumber.test(phone))
-      return res.status(400).send({
-        status: false,
-        message: "please enter valid phone characters",
-      });
-    const foundPhone = await userModel.findOne({ phone });
-    if (foundPhone)
-      return res
-        .status(400)
-        .send({ status: false, message: "This phone is already being used" });}
-    if(address){
-    if (!isValid(address.shipping.street))
-      return res
-        .status(400)
-        .send({ status: false, message: "street cannot be empty" });
-    if (!isValid(address.shipping.city))
-      return res
-        .status(400)
-        .send({ status: false, message: "city cannot be empty" });
-    if (!isValid(address.shipping.pincode))
-      return res
-        .status(400)
-        .send({ status: false, message: "pincode cannot be empty" });
-    if (!regexPinCode.test(address.shipping.pincode))
-      return res
-        .status(400)
-        .send({ status: false, message: "please use valid pincode" });
-    if (!isValid(address.billing.street))
-      return res
-        .status(400)
-        .send({ status: false, message: "street cannot be empty" });
-    if (!isValid(address.billing.city))
-      return res
-        .status(400)
-        .send({ status: false, message: "city cannot be empty" });
-    if (!isValid(address.billing.pincode))
-      return res
-        .status(400)
-        .send({ status: false, message: "pincode cannot be empty" });
-    if (!regexPinCode.test(address.billing.pincode))
-      return res
-        .status(400)
-        .send({ status: false, message: "please use valid pincode" });}
-    const savedObj={}
-    if(fname)savedObj.fname=fname
-    if(lname)savedObj.lname=lname
-    if(password)savedObj.password=maskedPassword
-    if(email)savedObj.email=email
-    if(files.length &&files[0].fieldname == "profileImage")savedObj.profileImage=uploadedFileURL
-    if(phone)savedObj.phone=phone
-    if(address)savedObj.address=address
+    if (fname) {
+      if (!isValid(fname))
+        return res
+          .status(400)
+          .send({ status: false, message: "fname cannot be empty" });
+      if (!regexName.test(fname))
+        return res
+          .status(400)
+          .send({ status: false, message: "please enter valid characters" });
+    }
+    if (lname) {
+      if (!isValid(lname))
+        return res
+          .status(400)
+          .send({ status: false, message: "lname cannot be empty" });
+      if (!regexName.test(lname))
+        return res.status(400).send({
+          status: false,
+          message: "please enter valid lname characters",
+        });
+    }
+    let maskedPassword;
+    if (password) {
+      if (!isValid(password))
+        return res
+          .status(400)
+          .send({ status: false, message: "password cannot be empty" });
+      if (!regexPassword.test(password))
+        return res.status(400).send({
+          status: false,
+          message:
+            "password must be between 8 to 15 digits one numbbe and one alphabet",
+        });
+      //hashing password
+
+      maskedPassword = await bcrypt.hash(password, 12);
+    }
+    console.log(address);
+    if (email) {
+      if (!isValid(email))
+        return res
+          .status(400)
+          .send({ status: false, message: "email cannot be empty" });
+      if (!regexEmail.test(email))
+        return res.status(400).send({
+          status: false,
+          message: "please enter valid email characters",
+        });
+      const foundEmail = await userModel.findOne({ email });
+      if (foundEmail)
+        return res
+          .status(400)
+          .send({ status: false, message: "This email is already being used" });
+    }
+    if (phone) {
+      if (!isValid(phone))
+        return res
+          .status(400)
+          .send({ status: false, message: "phone cannot be empty" });
+      if (!regexNumber.test(phone))
+        return res.status(400).send({
+          status: false,
+          message: "please enter valid phone characters",
+        });
+      const foundPhone = await userModel.findOne({ phone });
+      if (foundPhone)
+        return res
+          .status(400)
+          .send({ status: false, message: "This phone is already being used" });
+    }
+    if (newAddres) {
+      if(newAddres?.shipping?.street){
+      if (!isValid(newAddres?.shipping?.street))
+        return res
+          .status(400)
+          .send({
+            status: false,
+            message: "street of shipping cannot be empty",
+          });}
+      if(newAddres?.shipping?.city){
+      if (!isValid(newAddres?.shipping?.city))
+        return res
+          .status(400)
+          .send({ status: false, message: "city of shipping cannot be empty" });}
+      if(newAddres?.shipping?.pincode){
+      if (!isValid(newAddres?.shipping?.pincode))
+        return res.status(400).send({
+          status: false,
+          message: "pincode of shipping  cannot be empty",
+        });
+      
+      if (!regexPinCode.test(newAddres?.shipping?.pincode))
+        return res.status(400).send({
+          status: false,
+          message: "please use valid pincode of shipping",
+        });}
+      if(newAddres?.billing?.street){
+      if (!isValid(newAddres?.billing?.street))
+        return res
+          .status(400)
+          .send({
+            status: false,
+            message: "street of billing cannot be empty",
+          });}
+      if(newAddres?.billing?.city){
+      if (!isValid(newAddres?.billing?.city))
+        return res
+          .status(400)
+          .send({ status: false, message: "city of billing cannot be empty" });}
+      if(newAddres?.billing?.pincode){
+      if (!isValid(newAddres?.billing?.pincode))
+        return res
+          .status(400)
+          .send({
+            status: false,
+            message: "pincode of billing cannot be empty",
+          });
+      if (!regexPinCode.test(newAddres?.billing?.pincode))
+        return res.status(400).send({
+          status: false,
+          message: "please use valid pincode of billing",
+        });}
+    }
+
+    const savedObj = {};
+    if (fname) savedObj.fname = fname;
+    if (lname) savedObj.lname = lname;
+    if (password) savedObj.password = maskedPassword;
+    if (email) savedObj.email = email;
+    if (files.length && files[0].fieldname == "profileImage")
+      savedObj.profileImage = uploadedFileURL;
+    if (phone) savedObj.phone = phone;
+    if (address) savedObj.address = newAddres;
     const updatedData = await userModel.findOneAndUpdate(
-      { _id:userId },
+      { _id: userId },
       {
         $set: savedObj,
       },
@@ -435,7 +466,7 @@ exports.updatedUser = async function (req, res) {
       data: updatedData,
     });
   } catch (err) {
+    console.log(err)
     res.status(500).send({ err: err.message });
   }
 };
-
