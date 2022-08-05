@@ -296,11 +296,12 @@ exports.updatedUser = async function (req, res) {
   try {
     let { userId } = req.params;
     const { fname, lname, password, email, phone, address } = req.body;
+    const savedObj = {};
     if (!Object.keys(req.body).length)
       return res
         .status(400)
         .send({ status: false, message: "Body cannot be empty" });
-    let newAddres = address;
+    let newAddres = JSON.parse(address);
     let { files } = req;
     let uploadedFileURL;
     if (files.length) {
@@ -390,61 +391,78 @@ exports.updatedUser = async function (req, res) {
           .status(400)
           .send({ status: false, message: "This phone is already being used" });
     }
-    if (newAddres) {
-      if(newAddres?.shipping?.street){
-      if (!isValid(newAddres?.shipping?.street))
-        return res
-          .status(400)
-          .send({
-            status: false,
-            message: "street of shipping cannot be empty",
-          });}
-      if(newAddres?.shipping?.city){
-      if (!isValid(newAddres?.shipping?.city))
-        return res
-          .status(400)
-          .send({ status: false, message: "city of shipping cannot be empty" });}
-      if(newAddres?.shipping?.pincode){
-      if (!isValid(newAddres?.shipping?.pincode))
-        return res.status(400).send({
-          status: false,
-          message: "pincode of shipping  cannot be empty",
-        });
-      
-      if (!regexPinCode.test(newAddres?.shipping?.pincode))
-        return res.status(400).send({
-          status: false,
-          message: "please use valid pincode of shipping",
-        });}
-      if(newAddres?.billing?.street){
-      if (!isValid(newAddres?.billing?.street))
-        return res
-          .status(400)
-          .send({
-            status: false,
-            message: "street of billing cannot be empty",
-          });}
-      if(newAddres?.billing?.city){
-      if (!isValid(newAddres?.billing?.city))
-        return res
-          .status(400)
-          .send({ status: false, message: "city of billing cannot be empty" });}
-      if(newAddres?.billing?.pincode){
-      if (!isValid(newAddres?.billing?.pincode))
-        return res
-          .status(400)
-          .send({
-            status: false,
-            message: "pincode of billing cannot be empty",
-          });
-      if (!regexPinCode.test(newAddres?.billing?.pincode))
-        return res.status(400).send({
-          status: false,
-          message: "please use valid pincode of billing",
-        });}
+    if (address) {
+      add = JSON.parse(address);
+
+      const { shipping, billing } = add;
+      if (shipping) {
+        let { street, city, pincode } = shipping;
+        if (street) {
+          if (!isValid(street))
+            return res
+              .status(400)
+              .send({
+                status: false,
+                message: "Shipping street   must be alphabetic characters",
+              });
+              savedObj["address.shipping.street"] = street;
+        }
+        if (city) {
+          if (!isValid(city))
+            return res
+              .status(400)
+              .send({
+                status: false,
+                message: "Shipping city must be alphabetic characters",
+              });
+              savedObj["address.shipping.city"] = city;
+        }
+        if (pincode) {
+          if (!/^[0-9]{6}$/.test(pincode))
+            return res
+              .status(400)
+              .send({
+                status: false,
+                message: "Shipping pincode must be number min length 6",
+              });
+              savedObj["address.shipping.pincode"] = pincode;
+        }
+      }
+      if (billing) {
+        let { street, city, pincode } = billing;
+        if (street) {
+          if (!isValid(street))
+            return res
+              .status(400)
+              .send({
+                status: false,
+                message: "Billing street   must be alphabetic characters",
+              });
+              savedObj["address.billing.street"] = street;
+        }
+        if (city) {
+          if (!isValid(city))
+            return res
+              .status(400)
+              .send({
+                status: false,
+                message: "Billing city must be alphabetic characters",
+              });
+              savedObj["address.billing.city"] = city;
+        }
+        if (pincode) {
+          if (!/^[0-9]{6}$/.test(pincode))
+            return res
+              .status(400)
+              .send({
+                status: false,
+                message: "Billing pincode must be number min length 6",
+              });
+              savedObj["address.billing.phone"] = pincode;
+        }
+      }
     }
 
-    const savedObj = {};
     if (fname) savedObj.fname = fname;
     if (lname) savedObj.lname = lname;
     if (password) savedObj.password = maskedPassword;
@@ -452,7 +470,7 @@ exports.updatedUser = async function (req, res) {
     if (files.length && files[0].fieldname == "profileImage")
       savedObj.profileImage = uploadedFileURL;
     if (phone) savedObj.phone = phone;
-    if (address) savedObj.address = newAddres;
+
     const updatedData = await userModel.findOneAndUpdate(
       { _id: userId },
       {
@@ -466,7 +484,7 @@ exports.updatedUser = async function (req, res) {
       data: updatedData,
     });
   } catch (err) {
-    console.log(err)
+    console.log(err);
     res.status(500).send({ err: err.message });
   }
 };

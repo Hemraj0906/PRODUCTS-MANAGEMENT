@@ -3,6 +3,7 @@ const {updatedUser, userLogin,getProfile, register } = require('../controller/us
 const {authentication,authorization}= require('../middleware/auth')
 const {createProduct,newUpdate,getProduct, getProductById,deleteProduct}=require('../controller/productController')
 const {createCart,updateCart,getCart,deleteCart}=require('../controller/cartController');
+const {createOrder,updateOrder}=require('../controller/orderController')
 const router = express.Router();
 
 router.post('/register', register);
