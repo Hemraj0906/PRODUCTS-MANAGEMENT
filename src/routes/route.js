@@ -32,9 +32,9 @@ router.get('/users/:userId/cart',getCart);
 
 router.delete('/users/:userId/cart',deleteCart);
 
-router.post('/users/:userId',createOrder);
+router.post('/users/:userId/orders',createOrder);
 
-router.put('/users/:userId',updateOrder);
+router.put('/users/:userId/orders',updateOrder);
 
 
 

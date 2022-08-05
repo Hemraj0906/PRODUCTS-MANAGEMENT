@@ -8,7 +8,7 @@ const oderSchema=new mongoose.Schema({
 
     items: [{
       productId: {type:ObjectId, refs:"Product" , required:true},
-      quantity: {type:Number, required:true, min:1}
+      quantity: {type:Number, required:true, min:1},_id:false
     }],
 
     totalPrice: {type:Number, required:true },
@@ -19,7 +19,7 @@ const oderSchema=new mongoose.Schema({
 
     cancellable: {type:Boolean, default: true},
 
-    status: {type:String, default: 'pending', enum:["pending", "completed", "canclled"]},
+    status: {type:String, default: 'pending', enum:["pending", "completed", "cancelled"]},
 
     deletedAt: {type:Date}, 
 
