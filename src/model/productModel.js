@@ -1,4 +1,4 @@
-const mongoose = require("mongoose");
+const mongoose = require('mongoose');
 
 const productSchema = new mongoose.Schema(
   {
@@ -10,13 +10,12 @@ const productSchema = new mongoose.Schema(
     isFreeShipping: { type: Boolean, default: false },
     productImage: { type: String, required: true }, // s3 link
     style: { type: String },
-    availableSizes: { type: [String], required:true },
+    availableSizes: { type: [String], required: true },
     installments: { type: Number },
-    deletedAt: { type: Date ,default: null },
-    isDeleted: { type: Boolean, default: false },
-
+    deletedAt: { type: Date, default: null },
+    isDeleted: { type: Boolean, default: false }
   },
   { timestamps: true }
 );
 
-module.exports = mongoose.model("Product", productSchema);
+module.exports = mongoose.model('Product', productSchema);

@@ -1,30 +1,35 @@
-const mongoose=require("mongoose")
+const mongoose = require('mongoose');
 
-const ObjectId=mongoose.Types.ObjectId
+const { ObjectId } = mongoose.Types;
 
-const oderSchema=new mongoose.Schema({
+const oderSchema = new mongoose.Schema({
+  userId: { type: ObjectId, refs: 'User', required: true },
 
-    userId: {type:ObjectId, refs:"User", required:true},
+  items: [
+    {
+      productId: { type: ObjectId, refs: 'Product', required: true },
+      quantity: { type: Number, required: true, min: 1 },
+      _id: false
+    }
+  ],
 
-    items: [{
-      productId: {type:ObjectId, refs:"Product" , required:true},
-      quantity: {type:Number, required:true, min:1},_id:false
-    }],
+  totalPrice: { type: Number, required: true },
 
-    totalPrice: {type:Number, required:true },
+  totalItems: { type: Number, required: true },
 
-    totalItems: {type:Number, required:true},
+  totalQuantity: { type: Number, required: true },
 
-    totalQuantity: {type:Number, required:true},
+  cancellable: { type: Boolean, default: true },
 
-    cancellable: {type:Boolean, default: true},
+  status: {
+    type: String,
+    default: 'pending',
+    enum: ['pending', 'completed', 'cancelled']
+  },
 
-    status: {type:String, default: 'pending', enum:["pending", "completed", "cancelled"]},
+  deletedAt: { type: Date },
 
-    deletedAt: {type:Date}, 
+  isDeleted: { type: Boolean, default: false }
+});
 
-    isDeleted: {type:Boolean, default: false},
-    
-})
-
-module.exports=mongoose.model("Order",oderSchema)
+module.exports = mongoose.model('Order', oderSchema);

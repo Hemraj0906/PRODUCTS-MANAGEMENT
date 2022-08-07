@@ -1,7 +1,7 @@
 const express = require('express');
 const mongoose = require('mongoose');
+const multer = require('multer');
 const route = require('./routes/route');
-const multer=require('multer')
 
 const app = express();
 
@@ -10,9 +10,6 @@ app.use(express.json());
 app.use(multer().any())
 
 
-app.get('/',(req,res)=>{
-    res.send('Working')
-})
 
 mongoose
   .connect(
