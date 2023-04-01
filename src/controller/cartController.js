@@ -321,7 +321,7 @@ exports.deleteCart = async function(req, res) {
       { new: true }
     );
 
-    res.status(200).send({
+    res.status(204).send({
       status: true,
       msg: "Product has been deleted successfully",
       data: deleteData,

@@ -4,38 +4,35 @@ const jwt = require('jsonwebtoken');
 const mongoose = require('mongoose');
 const userModel = require('../model/userModel');
 
-exports.authentication = async function (req, res, next) {
+exports.authentication =  function (req, res, next) {
   try {
     const { userId } = req.params;
      // if userId is not a valid ObjectId
     if (!mongoose.isValidObjectId(userId)) {
-      return res.status(400).send({
-        status: false,
-        message: 'userId is invalid'
-      });
+      return res.status(400).send({status: false,
+        message: 'userId is invalid'});
     }
     let token = req.headers.authorization;
     if (!token) {
       return res
-      .status(400)
-        .send({ status: false, message: 'Token must be present' });
+      .status(400).send({ status: false, message: 'Token must be present' });
     }
     token = token.split(' ')[1];
 
-    const decodedToken = jwt.verify(token, 'functionup-radon', function(
+    const decodedToken = jwt.verify(token, 'functionup-radon',
+     function(
       err,
-
-      tokeneed
+     tokeneed
     ) {
       if (err) return null;
       return tokeneed;
     });
     if (!decodedToken)
       return res
-        .status(400)
-        .send({ status: false, message: 'Token is invalid' });
+        .status(401).send({ status: false, message: 'Token is invalid' });
     req.key = token;
     next();
+
   } catch (err) {
     res.status(500).send({ status: false, message: err.message });
   }

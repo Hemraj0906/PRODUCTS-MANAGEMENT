@@ -2,15 +2,7 @@ const productModel = require("../model/productModel");
 const aws = require("aws-sdk");
 const mongoose = require("mongoose");
 
-const {
-  regexName,
-  regexEmail,
-  regexPassword,
-  regexNumber,
-  regexPinCode,
-  titleRegex,
-  priceRegex,
-} = require("../validations/validations");
+const {regexName,regexEmail,regexPassword,regexNumber,regexPinCode,titleRegex,priceRegex} = require("../validations/validations");
 aws.config.update({
   accessKeyId: "AKIAY3L35MCRVFM24Q7U",
   secretAccessKey: "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",
@@ -126,7 +118,7 @@ exports.createProduct = async function(req, res) {
           .send({ status: false, msg: "isFreeShipping must be true or false" });
     }
     let files = req.files;
-    console.log(files);
+    // console.log(files);
     if (files.length == 0)
       return res
         .status(400)
@@ -209,9 +201,7 @@ exports.createProduct = async function(req, res) {
       availableSizes,
       installments,
     });
-    res
-      .status(201)
-      .send({ status: true, message: "Product Created", data: productCreated });
+    res.status(201).send({ status: true, message: "Product Created", data: productCreated });
   } catch (error) {
     res.status(500).send({
       status: false,
@@ -264,7 +254,7 @@ exports.getProduct = async (req, res) => {
         });
       }
     }
-    console.log(query);
+    // console.log(query);
     let getAllProduct = await productModel
       .find(query)
       .sort({ price: priceSort });
@@ -336,7 +326,7 @@ exports.newUpdate = async function(req, res) {
       return res
         .status(400)
         .send({ status: false, message: "productId is invalid" });
-    console.log(typeof isFreeShipping);
+    // console.log(typeof isFreeShipping);
     if (title) {
       if (!isValid(title))
         return res
@@ -464,8 +454,8 @@ exports.newUpdate = async function(req, res) {
       savedObj,
       { new: true }
     );
-    if (updateProduct == null)
-      return res.status(404).send({ status: false, message: "Not found" });
+     if (updateProduct == null)
+       return res.status(404).send({ status: false, message: "Not found" });
     res.status(200).send({
       status: true,
       message: "product is successfully updated",

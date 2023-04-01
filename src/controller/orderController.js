@@ -21,7 +21,7 @@ const createOrder = async function (req, res) {
     const user = await userModel.findOne({ _id: userId });
     if (!user)
       return res
-        .status(400)
+        .status(404)
         .send({ status: false, message: 'userId does not exist' });
     if (!isValid(cartId))
       return res
